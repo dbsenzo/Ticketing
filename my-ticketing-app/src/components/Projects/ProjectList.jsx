@@ -86,7 +86,7 @@ const ProjectList = () => {
                   <Progress value={calculateCompletedPercentage(project.tickets)} size="sm" colorScheme="green" />
                 </Td>
                 <Td>
-                  <Button colorScheme="blue" mr="4" onClick={() => navigate(`/projects/${project._id}/tickets`)}>View Tickets</Button>
+                  <Button colorScheme="purple" mr="4" onClick={() => navigate(`/projects/${project._id}/tickets`)}>View Tickets</Button>
                   <Button colorScheme="red" onClick={() => handleDelete(project._id)}>Delete</Button>
                 </Td>
               </Tr>

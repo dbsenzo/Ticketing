@@ -66,7 +66,7 @@ const UserForm = ({ user, onSave }) => {
         <option value="Développeur">Développeur</option>
         <option value="Rapporteur">Rapporteur</option>
       </Select>
-      <Button marginLeft="75%" width="25%" colorScheme="_blue" borderRadius={"0px"} onClick={handleSubmit}>
+      <Button marginLeft="75%" width="25%" colorScheme="purple" borderRadius={"0px"} onClick={handleSubmit}>
         Add
       </Button>
     </Box>

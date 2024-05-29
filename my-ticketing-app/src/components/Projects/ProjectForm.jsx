@@ -43,24 +43,24 @@ const ProjectForm = ({ project, onSave }) => {
   };
 
   return (
-    <Box p="8" bg="gray.800" shadow="lg" borderRadius="md">
-      <Heading as="h2" size="xl" color="white" mb="4">New Project</Heading>
+    <Box p="8" bg="white" shadow="lg" borderRadius="md">
+      <Heading as="h2" size="xl" color="black" mb="4">Create a project</Heading>
       <Input
         mb="4"
         placeholder="Project Name"
         value={name}
         onChange={(e) => setName(e.target.value)}
-        bg="gray.700"
-        color="white"
-        _placeholder={{ color: 'gray.400' }}
+        bg="white"
+        color="gray"
+        _placeholder={{ color: 'gray' }}
       />
       <Select
         mb="4"
         placeholder="Select Client"
         value={client}
         onChange={(e) => setClient(e.target.value)}
-        bg="gray.700"
-        color="white"
+        bg="white"
+        color="gray"
       >
         {clients.map(client => (
           <option key={client._id} value={client._id}>
@@ -68,7 +68,7 @@ const ProjectForm = ({ project, onSave }) => {
           </option>
         ))}
       </Select>
-      <Button width="100%" colorScheme="blue" onClick={handleSubmit}>
+      <Button width="100%" colorScheme="purple" onClick={handleSubmit}>
         Create Project
       </Button>
     </Box>

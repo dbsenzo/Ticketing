@@ -43,7 +43,7 @@ const TicketDetail = () => {
   const getTagColor = (status) => {
     switch (status) {
       case 'Open':
-        return 'blue';
+        return 'purple';
       case 'In Progress':
         return 'yellow';
       case 'Closed':

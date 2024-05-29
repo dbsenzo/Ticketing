@@ -56,7 +56,7 @@ const TicketCard = ({ id, title, description, date, status, priority, assignedTo
       </Flex>
       {role === 'Développeur' && (
         <Flex mt="4" justify="flex-end">
-          <Button colorScheme="blue" size="sm" mr="2" onClick={handleEdit}>Modifier</Button>
+          <Button colorScheme="purple" size="sm" mr="2" onClick={handleEdit}>Modifier</Button>
           <Button colorScheme="red" size="sm" onClick={handleDelete}>Supprimer</Button>
         </Flex>
       )}

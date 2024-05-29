@@ -98,8 +98,8 @@ const TicketForm = () => {
   };
 
   return (
-    <Box p="8" bg="gray.800" shadow="lg" borderRadius="md">
-      <Heading as="h2" size="xl" color="white" mb="4">
+    <Box p="8" bg="white" shadow="lg" borderRadius="md">
+      <Heading as="h2" size="xl" color="black" mb="4">
         {id ? 'Update Ticket' : 'Create Ticket'}
       </Heading>
       <Input
@@ -107,8 +107,8 @@ const TicketForm = () => {
         placeholder="Ticket Title"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        bg="gray.700"
-        color="white"
+        bg="white"
+        color="black"
         _placeholder={{ color: 'gray.400' }}
       />
       <Textarea
@@ -116,8 +116,8 @@ const TicketForm = () => {
         placeholder="Ticket Description"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
-        bg="gray.700"
-        color="white"
+        bg="white"
+        color="black"
         _placeholder={{ color: 'gray.400' }}
       />
       <Input
@@ -125,8 +125,8 @@ const TicketForm = () => {
         placeholder="Project Name"
         value={projectName}
         isDisabled
-        bg="gray.700"
-        color="white"
+        bg="white"
+        color="black"
         _placeholder={{ color: 'gray.400' }}
       />
       <Select
@@ -134,8 +134,8 @@ const TicketForm = () => {
         placeholder="Select Priority"
         value={priority}
         onChange={(e) => setPriority(e.target.value)}
-        bg="gray.700"
-        color="white"
+        bg="white"
+        color="black"
       >
         <option value="Low">Low</option>
         <option value="Mid">Mid</option>
@@ -146,8 +146,8 @@ const TicketForm = () => {
         placeholder="Select Status"
         value={status}
         onChange={(e) => setStatus(e.target.value)}
-        bg="gray.700"
-        color="white"
+        bg="white"
+        color="gray.400"
       >
         <option value="Open">Open</option>
         <option value="In Progress">In Progress</option>
@@ -158,8 +158,8 @@ const TicketForm = () => {
         placeholder="Assign to"
         value={assignedTo}
         onChange={(e) => setAssignedTo(e.target.value)}
-        bg="gray.700"
-        color="white"
+        bg="white"
+        color="gray.400"
       >
         {users.map(user => (
           <option key={user._id} value={user._id}>

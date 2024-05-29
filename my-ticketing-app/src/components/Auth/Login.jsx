@@ -52,7 +52,7 @@ const Login = () => {
               {error}
             </Text>
           )}
-          <Button width="100%" colorScheme="_blue" onClick={handleSubmit}>
+          <Button width="100%" colorScheme="purple" onClick={handleSubmit}>
             Login
           </Button>
         </Box>

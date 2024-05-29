@@ -9,6 +9,7 @@ const UserList = () => {
   const [editUsername, setEditUsername] = useState('');
   const [editRole, setEditRole] = useState('');
   const toast = useToast();
+  const { role } = useAuth();
 
   const fetchUsers = async () => {
     try {
@@ -109,7 +110,7 @@ const UserList = () => {
               <Tr key={user._id}>
                 <Td>{user.username}</Td>
                 <Td>
-                  <Tag variant='outline' colorScheme='brand'>
+                  <Tag variant='outline' colorScheme={user.role == "Développeur" ? 'purple' : 'green'}>
                     {user.role}
                   </Tag>
                 </Td>
@@ -119,7 +120,7 @@ const UserList = () => {
                       <Input
                         value={editUsername}
                         onChange={(e) => setEditUsername(e.target.value)}
-                        mb="4"
+                        mb="4"  
                       />
                       <Select
                         value={editRole}
@@ -135,7 +136,7 @@ const UserList = () => {
                     </>
                   ) : (
                     <>
-                      <Button colorScheme="_blue" mr="4" borderRadius={"0px"} onClick={() => handleEdit(user)}>
+                      <Button colorScheme="purple" mr="4" borderRadius={"0px"} onClick={() => handleEdit(user)}>
                         Edit
                       </Button>
                       <Button colorScheme="red" borderRadius={"0px"} onClick={() => handleDelete(user._id)}>
