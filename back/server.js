@@ -7,6 +7,7 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const User = require('./models/User');
 const app = express();
+const jwtSecret = 'your_jwt_secret';
 const PORT = 5000;
 const uri = "mongodb+srv://absimulator:hziHZKpMxVbw0t2p@cluster0.1covks1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
@@ -62,12 +63,33 @@ app.post("/auth/login", async (req, res) => {
       return res.status(400).json({ message: "Invalid password" });
     }
 
-    const token = jwt.sign({ userId: user._id, username: user.username }, 'your_jwt_secret', { expiresIn: '1h' });
+    const token = jwt.sign({ userId: user._id, username: user.username }, jwtSecret, { expiresIn: '1h' });
     res.status(200).json({ token });
   } catch (error) {
     console.error('Error during login:', error);
     res.status(500).json({ message: "Error logging in", error: error.message });
   }
+});
+
+// Middleware to verify token
+const verifyToken = (req, res, next) => {
+  const token = req.headers['authorization']?.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ message: 'No token provided' });
+  }
+
+  jwt.verify(token, jwtSecret, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ message: 'Failed to authenticate token' });
+    }
+    req.userId = decoded.userId;
+    next();
+  });
+};
+
+// Token Check Endpoint
+app.get("/auth/check", verifyToken, (req, res) => {
+  res.status(200).json({ message: "Token is valid" });
 });
 
 app.listen(5000, () => {

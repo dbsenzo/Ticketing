@@ -1,5 +1,6 @@
 // src/App.jsx
 import { createBrowserRouter, RouterProvider, Outlet, Navigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -16,12 +17,16 @@ import TicketDetail from './components/Tickets/TicketDetail';
 function App() {
 
   const LayoutProtectedWithHeader = () => {
-    const { isLoggedIn } = useAuth();
-    console.log(isLoggedIn);
-    if (!isLoggedIn) {
-      return <Navigate to={'/login'} />
+    const { isLoggedIn, loading } = useAuth();
+  
+    if (loading) {
+      return <div>Loading...</div>; // ou un spinner de chargement
     }
-
+  
+    if (!isLoggedIn) {
+      return <Navigate to="/login" />;
+    }
+  
     return (
       <>
         <Outlet />
