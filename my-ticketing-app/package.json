@@ -10,15 +10,20 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@chakra-ui/icons": "^2.1.1",
     "@chakra-ui/react": "^2.8.2",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
     "axios": "^1.7.2",
+    "bootstrap": "^5.3.3",
+    "clsx": "^2.1.1",
     "framer-motion": "^6.5.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.23.1",
     "react-toastify": "^10.0.5",
+    "simplex-noise": "^4.0.1",
+    "tailwind-merge": "^2.3.0",
     "toastify": "^2.0.1"
   },
   "devDependencies": {
