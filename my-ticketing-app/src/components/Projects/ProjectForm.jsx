@@ -1,20 +1,41 @@
-import { useState } from 'react';
-import { Box, Input, Button, Heading } from '@chakra-ui/react';
+import { useState, useEffect } from 'react';
+import { Box, Input, Button, Heading, Select } from '@chakra-ui/react';
 import axios from 'axios';
 
 const ProjectForm = ({ project, onSave }) => {
   const [name, setName] = useState(project ? project.name : '');
+  const [clients, setClients] = useState([]);
+  const [client, setClient] = useState('');
+
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://localhost:5000/clients', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setClients(response.data);
+      } catch (error) {
+        console.error('Error fetching clients', error);
+      }
+    };
+
+    fetchClients();
+  }, []);
 
   const handleSubmit = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:5000/projects', { name }, {
+      const response = await axios.post('http://localhost:5000/projects', { name, client }, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
       console.log('Project saved successfully', response.data);
       setName(''); // Clear the input field
+      setClient(''); // Clear the client field
       onSave(); // Call the onSave callback to update the project list
     } catch (error) {
       console.error('Error saving project', error);
@@ -23,7 +44,7 @@ const ProjectForm = ({ project, onSave }) => {
 
   return (
     <Box p="8" bg="gray.800" shadow="lg" borderRadius="md">
-      <Heading as="h2" size="xl" color="white" mb="4">Project Form</Heading>
+      <Heading as="h2" size="xl" color="white" mb="4">New Project</Heading>
       <Input
         mb="4"
         placeholder="Project Name"
@@ -33,8 +54,22 @@ const ProjectForm = ({ project, onSave }) => {
         color="white"
         _placeholder={{ color: 'gray.400' }}
       />
+      <Select
+        mb="4"
+        placeholder="Select Client"
+        value={client}
+        onChange={(e) => setClient(e.target.value)}
+        bg="gray.700"
+        color="white"
+      >
+        {clients.map(client => (
+          <option key={client._id} value={client._id}>
+            {client.name}
+          </option>
+        ))}
+      </Select>
       <Button width="100%" colorScheme="blue" onClick={handleSubmit}>
-        Save Project
+        Create Project
       </Button>
     </Box>
   );

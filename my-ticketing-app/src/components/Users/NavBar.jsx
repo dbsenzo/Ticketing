@@ -1,5 +1,4 @@
-import { Box, Flex, Link, Button, useColorMode, useColorModeValue } from '@chakra-ui/react';
-import { MoonIcon, SunIcon } from '@chakra-ui/icons';
+import { Box, Flex, Link, useColorModeValue } from '@chakra-ui/react';
 
 const NaveBar = () => {
   const bg = "white";

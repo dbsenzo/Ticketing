@@ -12,6 +12,7 @@ export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState(null);
+  const [name, setName] = useState('');
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -31,6 +32,7 @@ export const AuthProvider = ({ children }) => {
       });
       setIsLoggedIn(true);
       setRole(response.data.role);
+      setName(response.data.name);
     } catch (error) {
       console.error('Error checking token', error);
       logout();
@@ -45,6 +47,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('token', response.data.token);
       setIsLoggedIn(true);
       setRole(response.data.role);
+      setName(response.data.name);
       navigate('/projects');
       toast.success('Login successful!');
     } catch (error) {
@@ -61,7 +64,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, loading, role, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, loading, role, login, logout, name }}>
       {children}
     </AuthContext.Provider>
   );

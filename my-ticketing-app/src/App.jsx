@@ -1,5 +1,6 @@
 import { createBrowserRouter, RouterProvider, Outlet, Navigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
+import { ChakraProvider, Flex, Box } from '@chakra-ui/react';
 import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LoadingProvider } from './contexts/LoadingContext';
@@ -12,6 +13,7 @@ import TicketForm from './components/Tickets/TicketForm';
 import TicketDetail from './components/Tickets/TicketDetail';
 import ProjectTickets from './components/Projects/ProjectTickets';
 import Statistics from './components/Statistics/Statistics';
+import Sidebar from './components/Sidebar/Sidebar';
 
 function App() {
 
@@ -37,9 +39,14 @@ function App() {
     }
 
     return (
-      <>
-        <Outlet />
-      </>
+      <Flex>
+        <Box position={'fixed'}>
+          <Sidebar />
+        </Box>
+        <Box ml={'250px'} width={'100%'}>
+          <Outlet/>
+        </Box>
+      </Flex>
     );
   };
 
@@ -110,6 +117,7 @@ function App() {
   ]);
 
   return (
+    <ChakraProvider>
       <AuthProvider>
         <LoadingProvider>
           <div>
@@ -118,6 +126,7 @@ function App() {
           <RouterProvider router={router} />
         </LoadingProvider>
       </AuthProvider>
+      </ChakraProvider>
   );
 }
 
