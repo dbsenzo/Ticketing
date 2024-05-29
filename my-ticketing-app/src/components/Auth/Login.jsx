@@ -1,24 +1,19 @@
-// src/components/Auth/Login.jsx
 import { useState } from 'react';
-import { Box, Input, Button, Heading, Text } from '@chakra-ui/react';
+import { Box, Input, Button, Heading } from '@chakra-ui/react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async () => {
     try {
-      await login(username, password);
-      // Clear the form and error state on successful login
-      setUsername('');
-      setPassword('');
-      setError('');
+      await login(username, password, navigate);
     } catch (error) {
       console.error('Error logging in', error);
-      setError(error.message);
     }
   };
 
@@ -45,11 +40,6 @@ const Login = () => {
           color="white"
           _placeholder={{ color: 'gray.400' }}
         />
-        {error && (
-          <Text color="red.500" mb="4">
-            {error}
-          </Text>
-        )}
         <Button width="100%" colorScheme="blue" onClick={handleSubmit}>
           Login
         </Button>
