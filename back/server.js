@@ -76,31 +76,31 @@ app.post("/auth/register", async (req, res) => {
   }
 });
 
-// Login Endpoint
-app.post("/auth/login", async (req, res) => {
+// Auth routes
+app.post('/auth/login', async (req, res) => {
   const { username, password } = req.body;
   try {
     const user = await User.findOne({ username });
     if (!user) {
-      return res.status(400).json({ message: "User not found" });
+      return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return res.status(400).json({ message: "Invalid password" });
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ userId: user._id, username: user.username }, jwtSecret, { expiresIn: '1h' });
-    res.status(200).json({ token });
+    const token = jwt.sign({ userId: user._id, role: user.role }, jwtSecret, { expiresIn: '1h' });
+
+    res.status(200).json({ token, role: user.role });
   } catch (error) {
-    console.error('Error during login:', error);
-    res.status(500).json({ message: "Error logging in", error: error.message });
+    res.status(500).json({ message: 'Error logging in', error: error.message });
   }
 });
 
 // Token Check Endpoint
-app.get("/auth/check", verifyToken, (req, res) => {
-  res.status(200).json({ message: "Token is valid" });
+app.get('/auth/check', verifyToken, (req, res) => {
+  res.status(200).json({ userId: req.user.userId, role: req.user.role });
 });
 
 // Ticket Endpoints

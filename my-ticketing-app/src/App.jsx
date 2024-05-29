@@ -1,4 +1,3 @@
-// src/App.jsx
 import { createBrowserRouter, RouterProvider, Outlet, Navigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -16,17 +15,27 @@ import Statistics from './components/Statistics/Statistics';
 
 function App() {
 
+  const ProtectedRoute = ({ role, children }) => {
+    const { role: userRole } = useAuth();
+
+    if (role && role !== userRole) {
+      return <Navigate to="/projects" />;
+    }
+
+    return children;
+  };
+
   const LayoutProtectedWithHeader = () => {
-    const { isLoggedIn, loading } = useAuth();
-  
+    const { isLoggedIn, loading, role } = useAuth();
+
     if (loading) {
       return <div>Loading...</div>; // ou un spinner de chargement
     }
-  
+
     if (!isLoggedIn) {
       return <Navigate to="/login" />;
     }
-  
+
     return (
       <>
         <Outlet />
@@ -54,8 +63,12 @@ function App() {
       element: <LayoutProtectedWithHeader />,
       children: [
         {
+          path: '/',
+          element: <Navigate to="/projects" />
+        },
+        {
           path: 'utilisateurs',
-          element: <GestionUsers />
+          element: <ProtectedRoute role="Développeur"><GestionUsers /></ProtectedRoute>
         },
         {
           path: 'projects',
@@ -88,6 +101,8 @@ function App() {
       ]
     }
   ];
+
+
 
   const router = createBrowserRouter([
     ...routerLogin,
