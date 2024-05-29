@@ -1,6 +1,4 @@
-// src/App.jsx
 import { createBrowserRouter, RouterProvider, Outlet, Navigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -10,24 +8,34 @@ import Register from './components/Auth/Register';
 import GestionUsers from './components/Users/UserList';
 import GestionProjects from './components/Projects/ProjectList';
 import GestionClients from './components/Clients/ClientList';
-import GestionTickets from './components/Tickets/TicketList';
 import TicketForm from './components/Tickets/TicketForm';
 import TicketDetail from './components/Tickets/TicketDetail';
-import ClientForm from './components/Clients/ClientForm';
+import ProjectTickets from './components/Projects/ProjectTickets';
+import Statistics from './components/Statistics/Statistics';
 
 function App() {
 
+  const ProtectedRoute = ({ role, children }) => {
+    const { role: userRole } = useAuth();
+
+    if (role && role !== userRole) {
+      return <Navigate to="/projects" />;
+    }
+
+    return children;
+  };
+
   const LayoutProtectedWithHeader = () => {
-    const { isLoggedIn, loading } = useAuth();
-  
+    const { isLoggedIn, loading, role } = useAuth();
+
     if (loading) {
       return <div>Loading...</div>; // ou un spinner de chargement
     }
-  
+
     if (!isLoggedIn) {
       return <Navigate to="/login" />;
     }
-  
+
     return (
       <>
         <Outlet />
@@ -55,8 +63,12 @@ function App() {
       element: <LayoutProtectedWithHeader />,
       children: [
         {
+          path: '/',
+          element: <Navigate to="/projects" />
+        },
+        {
           path: 'utilisateurs',
-          element: <GestionUsers />
+          element: <ProtectedRoute role="Développeur"><GestionUsers /></ProtectedRoute>
         },
         {
           path: 'projects',
@@ -67,8 +79,8 @@ function App() {
           element: <GestionClients />
         },
         {
-          path: 'tickets',
-          element: <GestionTickets />
+          path: 'projects/:id/tickets',
+          element: <ProjectTickets /> 
         },
         {
           path: 'tickets/new',
@@ -81,10 +93,16 @@ function App() {
         {
           path: 'tickets/:id/edit',
           element: <TicketForm />
+        },
+        {
+          path: 'statistics',
+          element: <Statistics />
         }
       ]
     }
   ];
+
+
 
   const router = createBrowserRouter([
     ...routerLogin,
