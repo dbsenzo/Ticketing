@@ -1,4 +1,3 @@
-// server.js
 const express = require('express');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
@@ -6,12 +5,14 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const User = require('./models/User');
-const Client = require('./models/Client');
 const Ticket = require('./models/Ticket');
+const Project = require('./models/Project');
+const Client = require('./models/Client');
+
 const app = express();
-const jwtSecret = 'your_jwt_secret';
 const PORT = 5000;
 const uri = "mongodb+srv://absimulator:hziHZKpMxVbw0t2p@cluster0.1covks1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const jwtSecret = 'your_jwt_secret';
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -19,14 +20,34 @@ app.use(bodyParser.json());
 mongoose.connect(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-}).then(() => {
+})
+.then(() => {
   console.log("Connected to MongoDB!");
-}).catch((error) => {
+})
+.catch((error) => {
   console.error("Error connecting to MongoDB: ", error);
 });
 
+// Middleware to verify token
+const verifyToken = (req, res, next) => {
+  const token = req.headers['authorization']?.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ message: 'No token provided' });
+  }
+
+  jwt.verify(token, jwtSecret, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ message: 'Failed to authenticate token' });
+    }
+    req.userId = decoded.userId;
+    next();
+  });
+};
+
+// Registration Endpoint
 app.post("/auth/register", async (req, res) => {
   const { username, password, role } = req.body;
+  console.log(username, password, role);
   try {
     // Check if the user already exists
     const existingUser = await User.findOne({ username });
@@ -38,8 +59,14 @@ app.post("/auth/register", async (req, res) => {
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create a new user
-    const newUser = new User({ username, password: hashedPassword, role });
+    // Create a new user or client based on role
+    let newUser;
+    if (role) {
+      newUser = new User({ username, password: hashedPassword, role });
+    } else {
+      newUser = new User({ username, password: hashedPassword, role: 'Client' });
+    }
+
     await newUser.save();
 
     res.status(201).json({ message: "User registered successfully" });
@@ -48,7 +75,6 @@ app.post("/auth/register", async (req, res) => {
     res.status(500).json({ message: "Error registering user", error: error.message });
   }
 });
-
 
 // Login Endpoint
 app.post("/auth/login", async (req, res) => {
@@ -72,86 +98,173 @@ app.post("/auth/login", async (req, res) => {
   }
 });
 
-// Middleware to verify token
-const verifyToken = (req, res, next) => {
-  const token = req.headers['authorization']?.split(' ')[1];
-  if (!token) {
-    return res.status(401).json({ message: 'No token provided' });
-  }
-
-  jwt.verify(token, jwtSecret, (err, decoded) => {
-    if (err) {
-      return res.status(401).json({ message: 'Failed to authenticate token' });
-    }
-    req.userId = decoded.userId;
-    next();
-  });
-};
-
 // Token Check Endpoint
 app.get("/auth/check", verifyToken, (req, res) => {
   res.status(200).json({ message: "Token is valid" });
 });
 
+// Ticket Endpoints
 
-// User Endpoints
-
-// Get all users
-app.get('/users', verifyToken, async (req, res) => {
+// Get all tickets
+app.get('/tickets', verifyToken, async (req, res) => {
   try {
-    const users = await User.find();
-    res.status(200).json(users);
+    const tickets = await Ticket.find().populate('project').sort({ priority: -1 });
+    res.status(200).json(tickets);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching users', error: error.message });
+    res.status(500).json({ message: 'Error fetching tickets', error: error.message });
   }
 });
 
-// Create a new user
-app.post('/users', verifyToken, async (req, res) => {
-  const { username, password, role } = req.body;
-  try {
-    const existingUser = await User.findOne({ username });
-    if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ username, password: hashedPassword, role });
-    await newUser.save();
-
-    res.status(201).json(newUser);
-  } catch (error) {
-    res.status(500).json({ message: 'Error creating user', error: error.message });
-  }
-});
-
-// Update a user
-app.put('/users/:id', verifyToken, async (req, res) => {
-  const { id } = req.params;
-  const { username, password, role } = req.body;
-  try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const updatedUser = await User.findByIdAndUpdate(id, { username, password: hashedPassword, role }, { new: true });
-    if (!updatedUser) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    res.status(200).json(updatedUser);
-  } catch (error) {
-    res.status(500).json({ message: 'Error updating user', error: error.message });
-  }
-});
-
-// Delete a user
-app.delete('/users/:id', verifyToken, async (req, res) => {
+// Get a ticket by ID
+app.get('/tickets/:id', verifyToken, async (req, res) => {
   const { id } = req.params;
   try {
-    const deletedUser = await User.findByIdAndDelete(id);
-    if (!deletedUser) {
-      return res.status(404).json({ message: 'User not found' });
+    const ticket = await Ticket.findById(id).populate('project');
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found' });
     }
-    res.status(200).json({ message: 'User deleted successfully' });
+    res.status(200).json(ticket);
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting user', error: error.message });
+    res.status(500).json({ message: 'Error fetching ticket', error: error.message });
+  }
+});
+
+// Create a new ticket
+app.post('/tickets', verifyToken, async (req, res) => {
+  const { title, description, priority, project } = req.body;
+  try {
+    const newTicket = new Ticket({ title, description, priority, project });
+    await newTicket.save();
+    await Project.findByIdAndUpdate(project, { $push: { tickets: newTicket._id } });
+    res.status(201).json(newTicket);
+  } catch (error) {
+    res.status(500).json({ message: 'Error creating ticket', error: error.message });
+  }
+});
+
+// Update a ticket by ID
+app.put('/tickets/:id', verifyToken, async (req, res) => {
+  const { id } = req.params;
+  const { title, description, priority, status, project } = req.body;
+  try {
+    const ticket = await Ticket.findById(id);
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+
+    const oldProjectId = ticket.project;
+    ticket.title = title;
+    ticket.description = description;
+    ticket.priority = priority;
+    ticket.status = status;
+    ticket.project = project;
+
+    await ticket.save();
+
+    // If the project has changed, update the project references
+    if (oldProjectId.toString() !== project) {
+      await Project.findByIdAndUpdate(oldProjectId, { $pull: { tickets: id } });
+      await Project.findByIdAndUpdate(project, { $push: { tickets: id } });
+    }
+
+    res.status(200).json(ticket);
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating ticket', error: error.message });
+  }
+});
+
+
+// Delete a ticket by ID
+app.delete('/tickets/:id', verifyToken, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const deletedTicket = await Ticket.findByIdAndDelete(id);
+    if (!deletedTicket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+    await Project.findByIdAndUpdate(deletedTicket.project, { $pull: { tickets: deletedTicket._id } });
+    res.status(200).json({ message: 'Ticket deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting ticket', error: error.message });
+  }
+});
+
+// Project Endpoints
+
+// Get all projects
+app.get('/projects', verifyToken, async (req, res) => {
+  try {
+    const projects = await Project.find().populate('tickets');
+    res.status(200).json(projects);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching projects', error: error.message });
+  }
+});
+
+// Get tickets for a specific project
+app.get('/projects/:id/tickets', verifyToken, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const tickets = await Ticket.find({ project: id });
+    res.status(200).json(tickets);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching tickets', error: error.message });
+  }
+});
+
+
+// Get a project by ID
+app.get('/projects/:id', verifyToken, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const project = await Project.findById(id).populate('tickets');
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+    res.status(200).json(project);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching project', error: error.message });
+  }
+});
+
+// Create a new project
+app.post('/projects', verifyToken, async (req, res) => {
+  const { name } = req.body;
+  try {
+    const newProject = new Project({ name });
+    await newProject.save();
+    res.status(201).json(newProject);
+  } catch (error) {
+    res.status(500).json({ message: 'Error creating project', error: error.message });
+  }
+});
+
+// Update a project by ID
+app.put('/projects/:id', verifyToken, async (req, res) => {
+  const { id } = req.params;
+  const { name } = req.body;
+  try {
+    const updatedProject = await Project.findByIdAndUpdate(id, { name }, { new: true });
+    if (!updatedProject) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+    res.status(200).json(updatedProject);
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating project', error: error.message });
+  }
+});
+
+// Delete a project by ID
+app.delete('/projects/:id', verifyToken, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const deletedProject = await Project.findByIdAndDelete(id);
+    if (!deletedProject) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+    res.status(200).json({ message: 'Project deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting project', error: error.message });
   }
 });
 
@@ -179,7 +292,7 @@ app.post('/clients', verifyToken, async (req, res) => {
   }
 });
 
-// Update a client
+// Update a client by ID
 app.put('/clients/:id', verifyToken, async (req, res) => {
   const { id } = req.params;
   const { name } = req.body;
@@ -194,7 +307,7 @@ app.put('/clients/:id', verifyToken, async (req, res) => {
   }
 });
 
-// Delete a client
+// Delete a client by ID
 app.delete('/clients/:id', verifyToken, async (req, res) => {
   const { id } = req.params;
   try {
@@ -208,74 +321,6 @@ app.delete('/clients/:id', verifyToken, async (req, res) => {
   }
 });
 
-
-// Ticket Endpoints
-
-// Get all tickets
-app.get('/tickets', verifyToken, async (req, res) => {
-  try {
-    const tickets = await Ticket.find().sort({ priority: -1 });
-    res.status(200).json(tickets);
-  } catch (error) {
-    res.status(500).json({ message: 'Error fetching tickets', error: error.message });
-  }
-});
-
-// Get a ticket by ID
-app.get('/tickets/:id', verifyToken, async (req, res) => {
-  const { id } = req.params;
-  try {
-    const ticket = await Ticket.findById(id);
-    if (!ticket) {
-      return res.status(404).json({ message: 'Ticket not found' });
-    }
-    res.status(200).json(ticket);
-  } catch (error) {
-    res.status(500).json({ message: 'Error fetching ticket', error: error.message });
-  }
-});
-
-// Create a new ticket
-app.post('/tickets', verifyToken, async (req, res) => {
-  const { title, description, priority } = req.body;
-  try {
-    const newTicket = new Ticket({ title, description, priority });
-    await newTicket.save();
-    res.status(201).json(newTicket);
-  } catch (error) {
-    res.status(500).json({ message: 'Error creating ticket', error: error.message });
-  }
-});
-
-// Update a ticket by ID
-app.put('/tickets/:id', verifyToken, async (req, res) => {
-  const { id } = req.params;
-  const { title, description, priority, status } = req.body;
-  try {
-    const updatedTicket = await Ticket.findByIdAndUpdate(id, { title, description, priority, status }, { new: true });
-    if (!updatedTicket) {
-      return res.status(404).json({ message: 'Ticket not found' });
-    }
-    res.status(200).json(updatedTicket);
-  } catch (error) {
-    res.status(500).json({ message: 'Error updating ticket', error: error.message });
-  }
-});
-
-// Delete a ticket by ID
-app.delete('/tickets/:id', verifyToken, async (req, res) => {
-  const { id } = req.params;
-  try {
-    const deletedTicket = await Ticket.findByIdAndDelete(id);
-    if (!deletedTicket) {
-      return res.status(404).json({ message: 'Ticket not found' });
-    }
-    res.status(200).json({ message: 'Ticket deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: 'Error deleting ticket', error: error.message });
-  }
-});
-
-app.listen(5000, () => {
-  console.log("Server is running on port 5000");
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });

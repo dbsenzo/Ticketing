@@ -1,6 +1,5 @@
 // src/App.jsx
 import { createBrowserRouter, RouterProvider, Outlet, Navigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -10,10 +9,9 @@ import Register from './components/Auth/Register';
 import GestionUsers from './components/Users/UserList';
 import GestionProjects from './components/Projects/ProjectList';
 import GestionClients from './components/Clients/ClientList';
-import GestionTickets from './components/Tickets/TicketList';
 import TicketForm from './components/Tickets/TicketForm';
 import TicketDetail from './components/Tickets/TicketDetail';
-import ClientForm from './components/Clients/ClientForm';
+import ProjectTickets from './components/Projects/ProjectTickets';
 
 function App() {
 
@@ -67,8 +65,8 @@ function App() {
           element: <GestionClients />
         },
         {
-          path: 'tickets',
-          element: <GestionTickets />
+          path: 'projects/:id/tickets',
+          element: <ProjectTickets /> 
         },
         {
           path: 'tickets/new',

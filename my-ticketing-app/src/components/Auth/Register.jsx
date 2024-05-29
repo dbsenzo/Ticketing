@@ -12,6 +12,7 @@ const Register = () => {
       const response = await axios.post('http://localhost:5000/auth/register', {
         username,
         password,
+        role: 'Rapporteur'
       });
       console.log('Registration successful', response.data);
       // Handle successful registration

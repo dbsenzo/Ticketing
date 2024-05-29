@@ -1,17 +1,36 @@
 import { useState, useEffect } from 'react';
 import { Box, Input, Textarea, Button, Heading, Select } from '@chakra-ui/react';
 import axios from 'axios';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 const TicketForm = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState('Low');
   const [status, setStatus] = useState('Open');
+  const [projects, setProjects] = useState([]);
+  const [project, setProject] = useState('');
   const navigate = useNavigate();
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://localhost:5000/projects', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setProjects(response.data);
+      } catch (error) {
+        console.error('Error fetching projects', error);
+      }
+    };
+
+    fetchProjects();
+
     if (id) {
       const fetchTicket = async () => {
         try {
@@ -25,13 +44,19 @@ const TicketForm = () => {
           setDescription(response.data.description);
           setPriority(response.data.priority);
           setStatus(response.data.status);
+          setProject(response.data.project._id);  // Note that the project is not changeable
         } catch (error) {
           console.error('Error fetching ticket', error);
         }
       };
       fetchTicket();
+    } else {
+      const projectFromUrl = searchParams.get('project');
+      if (projectFromUrl) {
+        setProject(projectFromUrl);
+      }
     }
-  }, [id]);
+  }, [id, searchParams]);
 
   const handleSubmit = async () => {
     try {
@@ -41,12 +66,13 @@ const TicketForm = () => {
           Authorization: `Bearer ${token}`,
         },
       };
+      const payload = { title, description, priority, status, project };
       if (id) {
-        await axios.put(`http://localhost:5000/tickets/${id}`, { title, description, priority, status }, config);
+        await axios.put(`http://localhost:5000/tickets/${id}`, payload, config);
       } else {
-        await axios.post('http://localhost:5000/tickets', { title, description, priority, status }, config);
+        await axios.post('http://localhost:5000/tickets', payload, config);
       }
-      navigate('/tickets');
+      navigate(`/projects/${project}/tickets`);
     } catch (error) {
       console.error('Error saving ticket', error);
     }
@@ -73,6 +99,23 @@ const TicketForm = () => {
         color="white"
         _placeholder={{ color: 'gray.400' }}
       />
+      {!id && (
+        <>
+          {projects.map(proj => (
+            <Input
+              key={proj._id}
+              mb="4"
+              placeholder="Ticket Title"
+              value={proj.name}
+              onChange={(e) => setTitle(e.target.value)}
+              bg="gray.700"
+              color="white"
+              _placeholder={{ color: 'gray.400' }}
+              disabled
+            />
+          ))}
+        </>
+      )}
       <Select
         mb="4"
         placeholder="Select Priority"
