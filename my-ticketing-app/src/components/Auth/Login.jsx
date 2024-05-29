@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Box, Input, Button, Heading, Text, Center, Image } from '@chakra-ui/react';
-import { Box, Input, Button, Heading } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
 
