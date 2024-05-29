@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Box, Table, Tbody, Tr, Th, Td, Button, Heading, Tag, Input, Select, useToast, Center, Thead } from '@chakra-ui/react';
+import { Box, Table, Tbody, Tr, Th, Td, Button, Heading, Tag, Input, Select, useToast, Thead } from '@chakra-ui/react';
 import axios from 'axios';
 import UserForm from './UserForm';
-import NavBar from './NavBar'
 
 const UserList = () => {
   const [users, setUsers] = useState([]);
@@ -93,12 +92,9 @@ const UserList = () => {
   };
 
   return (
-    <Box>
-    <NavBar />
-    <Box ml="250px" p="8" bg="white">
+    <Box p="8" bg="white">
           <Heading color="brand.500" as="h2" size="xl" mb="4">Gestion des users</Heading>
           <UserForm onSave={fetchUsers}/>
-          <Center w="77.5vw" />
         <br />
         <Table variant="simple">
           <Thead>
@@ -153,7 +149,6 @@ const UserList = () => {
           </Tbody>
         </Table>
       </Box>
-    </Box>
   );
 };
 

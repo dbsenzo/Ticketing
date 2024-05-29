@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Box, Button, Heading, SimpleGrid } from '@chakra-ui/react';
+import { Box, Button, Heading, SimpleGrid, Flex } from '@chakra-ui/react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import TicketCard from '../Tickets/TicketCard';
@@ -60,8 +60,10 @@ const ProjectTickets = () => {
   return (
     <Box p="8" w={'100%'}>
       <Heading as="h2" size="xl" mb="4">Tickets for Project</Heading>
-      <Button colorScheme="green" mb="4" onClick={() => navigate(`/tickets/new?project=${id}`)}>Create New Ticket</Button>
-      <Button colorScheme="red" mb="4" onClick={() => navigate(`/projects`)}>Back</Button>
+      <Flex gap={'5px'}>
+        <Button colorScheme="green" mb="4" onClick={() => navigate(`/tickets/new?project=${id}`)}>Create New Ticket</Button>
+        <Button colorScheme="red" mb="4" onClick={() => navigate(`/projects`)}>Back</Button>
+      </Flex>
       <Box
         maxH="70vh" // Hauteur maximale pour le conteneur de la liste des tickets
         overflowY="auto" // Activer le défilement vertical
