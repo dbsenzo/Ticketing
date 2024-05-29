@@ -23,19 +23,19 @@ const ClientForm = ({ onSave }) => {
   };
 
   return (
-    <Box p="8" bg="gray.800" shadow="lg" borderRadius="md">
-      <Heading as="h2" size="xl" color="white" mb="4">Client Form</Heading>
+    <Box p="8" bg="white" shadow="lg" borderRadius="md">
+      <Heading as="h2" size="xl" color="black" mb="4">Client Form</Heading>
       <Input
         mb="4"
         placeholder="Client Name"
         value={name}
         onChange={(e) => setName(e.target.value)}
-        bg="gray.700"
+        bg="white"
         color="white"
         _placeholder={{ color: 'gray.400' }}
       />
-      <Button width="100%" colorScheme="blue" onClick={handleSubmit}>
-        Save Client
+      <Button marginLeft="75%" width="25%" colorScheme="purple" borderRadius={"0px"} onClick={handleSubmit}>
+        Add
       </Button>
     </Box>
   );

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Box, Table, Tbody, Tr, Th, Td, Button, Heading, Tag, Input, Select, useToast, Thead } from '@chakra-ui/react';
 import axios from 'axios';
 import UserForm from './UserForm';
+import { useAuth } from '../../contexts/AuthContext';
+
 
 const UserList = () => {
   const [users, setUsers] = useState([]);
@@ -102,7 +104,7 @@ const UserList = () => {
             <Tr>
               <Th>Username</Th>
               <Th>Role</Th>
-              <Th>Actions</Th>
+              {role == "Rapporteur" ? (<></>) : (<Th>Actions</Th>)}
             </Tr>
           </Thead>
           <Tbody>
@@ -136,12 +138,16 @@ const UserList = () => {
                     </>
                   ) : (
                     <>
+                    {role == "Rapporteur" ? (<></>) : (
+                    <>
                       <Button colorScheme="purple" mr="4" borderRadius={"0px"} onClick={() => handleEdit(user)}>
                         Edit
                       </Button>
                       <Button colorScheme="red" borderRadius={"0px"} onClick={() => handleDelete(user._id)}>
-                        Delete
+                      Delete
                       </Button>
+                    </>
+                    )}
                     </>
                   )}
                 </Td>

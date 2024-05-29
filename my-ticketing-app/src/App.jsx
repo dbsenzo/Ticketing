@@ -75,7 +75,7 @@ function App() {
         },
         {
           path: 'utilisateurs',
-          element: <ProtectedRoute role="Développeur"><GestionUsers /></ProtectedRoute>
+          element: <GestionUsers />
         },
         {
           path: 'projects',

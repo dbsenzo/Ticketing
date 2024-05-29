@@ -109,7 +109,7 @@ const TicketForm = () => {
         onChange={(e) => setTitle(e.target.value)}
         bg="white"
         color="black"
-        _placeholder={{ color: 'gray.400' }}
+        _placeholder={{ color: 'gray' }}
       />
       <Textarea
         mb="4"
@@ -118,7 +118,7 @@ const TicketForm = () => {
         onChange={(e) => setDescription(e.target.value)}
         bg="white"
         color="black"
-        _placeholder={{ color: 'gray.400' }}
+        _placeholder={{ color: 'gray' }}
       />
       <Input
         mb="4"
@@ -127,7 +127,7 @@ const TicketForm = () => {
         isDisabled
         bg="white"
         color="black"
-        _placeholder={{ color: 'gray.400' }}
+        _placeholder={{ color: 'gray' }}
       />
       <Select
         mb="4"
@@ -147,7 +147,7 @@ const TicketForm = () => {
         value={status}
         onChange={(e) => setStatus(e.target.value)}
         bg="white"
-        color="gray.400"
+        color="gray"
       >
         <option value="Open">Open</option>
         <option value="In Progress">In Progress</option>
@@ -159,7 +159,7 @@ const TicketForm = () => {
         value={assignedTo}
         onChange={(e) => setAssignedTo(e.target.value)}
         bg="white"
-        color="gray.400"
+        color="gray"
       >
         {users.map(user => (
           <option key={user._id} value={user._id}>

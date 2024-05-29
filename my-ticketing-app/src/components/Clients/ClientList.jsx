@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Box, Table, Tbody, Tr, Th, Td, Button, Heading, Input, useToast } from '@chakra-ui/react';
+import { Box, Table, Thead, Tbody, Tr, Th, Td, Button, Heading, Input, useToast } from '@chakra-ui/react';
 import axios from 'axios';
 import ClientForm from './ClientForm';
 
@@ -90,6 +90,12 @@ const ClientList = () => {
       <Heading as="h2" size="xl" mb="4">Clients</Heading>
       <ClientForm onSave={fetchClients} />
       <Table variant="simple">
+      <Thead>
+            <Tr>
+              <Th>Nom</Th>
+              <Th>Actions</Th>
+            </Tr>
+          </Thead>
         <Tbody>
           {clients.map(client => (
             <Tr key={client._id}>
@@ -105,15 +111,15 @@ const ClientList = () => {
               </Td>
               <Td>
                 {editingClient && editingClient._id === client._id ? (
-                  <Button colorScheme="green" mr="4" onClick={handleUpdate}>
+                  <Button colorScheme="green" borderRadius={"0px"} mr="4" onClick={handleUpdate}>
                     Save
                   </Button>
                 ) : (
-                  <Button colorScheme="blue" mr="4" onClick={() => handleEdit(client)}>
+                  <Button colorScheme="purple" borderRadius={"0px"} mr="4" onClick={() => handleEdit(client)}>
                     Edit
                   </Button>
                 )}
-                <Button colorScheme="red" onClick={() => handleDelete(client._id)}>
+                <Button colorScheme="red" borderRadius={"0px"} onClick={() => handleDelete(client._id)}>
                   Delete
                 </Button>
               </Td>
