@@ -92,7 +92,7 @@ app.post('/auth/login', async (req, res) => {
 
     const token = jwt.sign({ userId: user._id, role: user.role }, jwtSecret, { expiresIn: '1h' });
 
-    res.status(200).json({ token, role: user.role });
+    res.status(200).json({ token, role: user.role, name: user.username });
   } catch (error) {
     res.status(500).json({ message: 'Error logging in', error: error.message });
   }
@@ -197,8 +197,14 @@ app.get('/projects', verifyToken, async (req, res) => {
 app.get('/projects/:id/tickets', verifyToken, async (req, res) => {
   const { id } = req.params;
   try {
-    const tickets = await Ticket.find({ project: id });
-    res.status(200).json(tickets);
+    const project = await Project.findById(id).populate({
+      path: 'tickets',
+      populate: { path: 'assignedTo', select: 'username' }
+    });
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+    res.status(200).json(project.tickets);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching tickets', error: error.message });
   }
@@ -221,15 +227,21 @@ app.get('/projects/:id', verifyToken, async (req, res) => {
 
 // Create a new project
 app.post('/projects', verifyToken, async (req, res) => {
-  const { name } = req.body;
+  const { name, client } = req.body;
+
+  if (!name || !client) {
+    return res.status(400).json({ message: 'Project name and client are required' });
+  }
+
   try {
-    const newProject = new Project({ name });
+    const newProject = new Project({ name, client });
     await newProject.save();
     res.status(201).json(newProject);
   } catch (error) {
     res.status(500).json({ message: 'Error creating project', error: error.message });
   }
 });
+
 
 // Update a project by ID
 app.put('/projects/:id', verifyToken, async (req, res) => {
@@ -320,6 +332,48 @@ app.get('/users', verifyToken, async (req, res) => {
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching users', error: error.message });
+  }
+});
+
+app.put('/users/:id', verifyToken, async (req, res) => {
+  const { id } = req.params;
+  const { username, password, role } = req.body;
+
+  try {
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.username = username || user.username;
+    if (password) {
+      user.password = await bcrypt.hash(password, 10);
+    }
+    user.role = role || user.role;
+
+    await user.save();
+
+    res.status(200).json({ message: 'User updated successfully', user });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating user', error: error.message });
+  }
+});
+
+// Delete user
+app.delete('/users/:id', verifyToken, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const user = await User.findByIdAndDelete(id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({ message: 'User deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting user', error: error.message });
   }
 });
 
