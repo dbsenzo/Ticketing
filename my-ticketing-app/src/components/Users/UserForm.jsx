@@ -26,17 +26,24 @@ const UserForm = ({ user, onSave }) => {
     }
   };
 
+  const chakraStyles = {
+      option: (provided) => ({
+        ...provided,
+        color: "black"
+      }),
+    };
+
   return (
-    <Box p="8" bg="gray.800" shadow="lg" borderRadius="md">
-      <Heading as="h2" size="xl" color="white" mb="4">User Form</Heading>
+    <Box p="8" bg="white" shadow="lg" borderRadius="md">
+      <Heading as="h2" size="lg" color="gray.700" mb="4">Add an user</Heading>
       <Input
         mb="4"
         placeholder="Username"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
-        bg="gray.700"
-        color="white"
-        _placeholder={{ color: 'gray.400' }}
+        bg="white"
+        color="black"
+        _placeholder={{ color: 'gray.700' }}
       />
       <Input
         mb="4"
@@ -44,23 +51,23 @@ const UserForm = ({ user, onSave }) => {
         type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        bg="gray.700"
-        color="white"
-        _placeholder={{ color: 'gray.400' }}
+        bg="white"
+        color="black"
+        _placeholder={{ color: 'gray.700' }}
       />
       <Select
         mb="4"
         placeholder="Select role"
         value={role}
         onChange={(e) => setRole(e.target.value)}
-        bg="gray.700"
-        color="white"
+        bg="white"
+        color="black"
       >
         <option value="Développeur">Développeur</option>
         <option value="Rapporteur">Rapporteur</option>
       </Select>
-      <Button width="100%" colorScheme="blue" onClick={handleSubmit}>
-        Save User
+      <Button marginLeft="75%" width="25%" colorScheme="_blue" borderRadius={"0px"} onClick={handleSubmit}>
+        Add
       </Button>
     </Box>
   );

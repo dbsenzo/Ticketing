@@ -1,6 +1,6 @@
 // src/components/Auth/Register.jsx
 import { useState } from 'react';
-import { Box, Input, Button, Heading } from '@chakra-ui/react';
+import { Box, Input, Button, Heading, Center, Image } from '@chakra-ui/react';
 import axios from 'axios';
 
 const Register = () => {
@@ -21,33 +21,40 @@ const Register = () => {
   };
 
   return (
-    <Box className="flex justify-center items-center h-screen bg-gray-900">
-      <Box p="8" bg="gray.800" shadow="lg" borderRadius="md">
-        <Heading as="h2" size="xl" color="white" mb="4">Register</Heading>
-        <Input
-          mb="4"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          bg="gray.700"
-          color="white"
-          _placeholder={{ color: 'gray.400' }}
-        />
-        <Input
-          mb="4"
-          placeholder="Password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          bg="gray.700"
-          color="white"
-          _placeholder={{ color: 'gray.400' }}
-        />
-        <Button width="100%" colorScheme="blue" onClick={handleSubmit}>
-          Register
-        </Button>
+    <Center h="100vh" w="100vw" bg="white">
+      <Box className="flex justify-center items-center h-screen bg-gray-900">
+        <Box p="8" bg="white" shadow="dark-lg" borderRadius="md">
+          <Box display="flex" alignItems="baseline">
+            <Heading as="h2" size="xl" color="black" mb="4">
+              Register
+            </Heading>
+            <Image src="registergif.gif" ml="4"/>
+          </Box>
+          <Input
+            mb="4"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            bg="white"
+            color="black"
+            _placeholder={{ color: 'gray.700' }}
+          />
+          <Input
+            mb="4"
+            placeholder="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            bg="white"
+            color="black"
+            _placeholder={{ color: 'gray.700' }}
+          />
+          <Button width="100%" colorScheme="_blue" onClick={handleSubmit}>
+            Register
+          </Button>
+        </Box>
       </Box>
-    </Box>
+    </Center>
   );
 };
 
