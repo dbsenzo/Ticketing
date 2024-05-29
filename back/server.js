@@ -7,6 +7,7 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const User = require('./models/User');
 const Client = require('./models/Client');
+const Ticket = require('./models/Ticket');
 const app = express();
 const jwtSecret = 'your_jwt_secret';
 const PORT = 5000;
@@ -204,6 +205,74 @@ app.delete('/clients/:id', verifyToken, async (req, res) => {
     res.status(200).json({ message: 'Client deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting client', error: error.message });
+  }
+});
+
+
+// Ticket Endpoints
+
+// Get all tickets
+app.get('/tickets', verifyToken, async (req, res) => {
+  try {
+    const tickets = await Ticket.find().sort({ priority: -1 });
+    res.status(200).json(tickets);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching tickets', error: error.message });
+  }
+});
+
+// Get a ticket by ID
+app.get('/tickets/:id', verifyToken, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const ticket = await Ticket.findById(id);
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+    res.status(200).json(ticket);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching ticket', error: error.message });
+  }
+});
+
+// Create a new ticket
+app.post('/tickets', verifyToken, async (req, res) => {
+  const { title, description, priority } = req.body;
+  try {
+    const newTicket = new Ticket({ title, description, priority });
+    await newTicket.save();
+    res.status(201).json(newTicket);
+  } catch (error) {
+    res.status(500).json({ message: 'Error creating ticket', error: error.message });
+  }
+});
+
+// Update a ticket by ID
+app.put('/tickets/:id', verifyToken, async (req, res) => {
+  const { id } = req.params;
+  const { title, description, priority, status } = req.body;
+  try {
+    const updatedTicket = await Ticket.findByIdAndUpdate(id, { title, description, priority, status }, { new: true });
+    if (!updatedTicket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+    res.status(200).json(updatedTicket);
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating ticket', error: error.message });
+  }
+});
+
+// Delete a ticket by ID
+app.delete('/tickets/:id', verifyToken, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const deletedTicket = await Ticket.findByIdAndDelete(id);
+    if (!deletedTicket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+    res.status(200).json({ message: 'Ticket deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting ticket', error: error.message });
   }
 });
 

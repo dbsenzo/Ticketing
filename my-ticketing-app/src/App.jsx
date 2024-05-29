@@ -78,6 +78,10 @@ function App() {
           path: 'tickets/:id',
           element: <TicketDetail />
         },
+        {
+          path: 'tickets/:id/edit',
+          element: <TicketForm />
+        }
       ]
     }
   ];
