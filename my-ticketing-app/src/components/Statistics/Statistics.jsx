@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Box, Heading, Text, SimpleGrid } from '@chakra-ui/react';
+import { Box, Heading, Text, SimpleGrid, Flex, Stat, StatLabel, StatNumber } from '@chakra-ui/react';
 import axios from 'axios';
-import { Bar, Pie } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
+import { Bar, Pie, Line } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
+ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, ArcElement);
 
 const Statistics = () => {
   const [stats, setStats] = useState({
@@ -91,27 +91,29 @@ const Statistics = () => {
     <Box p="8">
       <Heading as="h2" size="xl" mb="4">Statistics</Heading>
       <SimpleGrid columns={[1, null, 2]} spacing="8">
-        <Box mb="8">
+        <Box mb="8" p="4" bg="white" shadow="md" borderRadius="lg">
           <Text mb="4">Tickets per Month:</Text>
           <Bar data={ticketsPerMonthData} options={{ responsive: true }} />
         </Box>
-        <Box mb="8">
+        <Box mb="8" p="4" bg="white" shadow="md" borderRadius="lg">
           <Text mb="4">Tickets per User:</Text>
           <Pie data={ticketsPerUserData} options={{ responsive: true }} />
         </Box>
-        <Box mb="8">
+        <Box mb="8" p="4" bg="white" shadow="md" borderRadius="lg">
           <Text mb="4">Tickets per Project:</Text>
           <Bar data={ticketsPerProjectData} options={{ responsive: true }} />
         </Box>
-        <Box mb="8">
+        <Box mb="8" p="4" bg="white" shadow="md" borderRadius="lg">
           <Text mb="4">Tickets per Status:</Text>
           <Pie data={ticketsPerStatusData} options={{ responsive: true }} />
         </Box>
-        <Box mb="8">
-          <Text mb="4">Average Resolution Time (minutes): {avgResolutionTimeInMinutes}</Text>
+        <Box mb="8" p="4" bg="white" shadow="md" borderRadius="lg">
+          <Stat>
+            <StatLabel>Average Resolution Time (minutes)</StatLabel>
+            <StatNumber>{avgResolutionTimeInMinutes}</StatNumber>
+          </Stat>
         </Box>
       </SimpleGrid>
-      {/* Add more statistics as needed */}
     </Box>
   );
 };

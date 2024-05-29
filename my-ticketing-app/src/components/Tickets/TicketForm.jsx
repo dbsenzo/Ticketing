@@ -10,8 +10,7 @@ const TicketForm = () => {
   const [status, setStatus] = useState('Open');
   const [users, setUsers] = useState([]);
   const [assignedTo, setAssignedTo] = useState('');
-  const [projects, setProjects] = useState([]);
-  const [project, setProject] = useState('');
+  const [projectName, setProjectName] = useState('');
   const navigate = useNavigate();
   const { id } = useParams();
   const [searchParams] = useSearchParams();
@@ -20,12 +19,6 @@ const TicketForm = () => {
     const fetchProjectsAndUsers = async () => {
       try {
         const token = localStorage.getItem('token');
-        const projectResponse = await axios.get('http://localhost:5000/projects', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setProjects(projectResponse.data);
 
         const userResponse = await axios.get('http://localhost:5000/users', {
           headers: {
@@ -40,6 +33,20 @@ const TicketForm = () => {
 
     fetchProjectsAndUsers();
 
+    const fetchProjectName = async (projectId) => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`http://localhost:5000/projects/${projectId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setProjectName(response.data.name);
+      } catch (error) {
+        console.error('Error fetching project name', error);
+      }
+    };
+
     if (id) {
       const fetchTicket = async () => {
         try {
@@ -53,8 +60,8 @@ const TicketForm = () => {
           setDescription(response.data.description);
           setPriority(response.data.priority);
           setStatus(response.data.status);
-          setProject(response.data.project._id);  // Note that the project is not changeable
           setAssignedTo(response.data.assignedTo || '');
+          await fetchProjectName(response.data.project._id);
         } catch (error) {
           console.error('Error fetching ticket', error);
         }
@@ -63,7 +70,7 @@ const TicketForm = () => {
     } else {
       const projectFromUrl = searchParams.get('project');
       if (projectFromUrl) {
-        setProject(projectFromUrl);
+        fetchProjectName(projectFromUrl);
       }
     }
   }, [id, searchParams]);
@@ -76,13 +83,15 @@ const TicketForm = () => {
           Authorization: `Bearer ${token}`,
         },
       };
-      const payload = { title, description, priority, status, project, assignedTo };
+      const payload = { title, description, priority, status, assignedTo };
+      let response;
       if (id) {
-        await axios.put(`http://localhost:5000/tickets/${id}`, payload, config);
+        response = await axios.put(`http://localhost:5000/tickets/${id}`, payload, config);
       } else {
-        await axios.post('http://localhost:5000/tickets', payload, config);
+        const projectId = searchParams.get('project');
+        response = await axios.post('http://localhost:5000/tickets', { ...payload, project: projectId }, config);
       }
-      navigate(`/projects/${project}/tickets`);
+      navigate(`/projects/${searchParams.get('project') || response.data.project}/tickets`);
     } catch (error) {
       console.error('Error saving ticket', error);
     }
@@ -90,7 +99,9 @@ const TicketForm = () => {
 
   return (
     <Box p="8" bg="gray.800" shadow="lg" borderRadius="md">
-      <Heading as="h2" size="xl" color="white" mb="4">Ticket Form</Heading>
+      <Heading as="h2" size="xl" color="white" mb="4">
+        {id ? 'Update Ticket' : 'Create Ticket'}
+      </Heading>
       <Input
         mb="4"
         placeholder="Ticket Title"
@@ -109,22 +120,15 @@ const TicketForm = () => {
         color="white"
         _placeholder={{ color: 'gray.400' }}
       />
-      {!id && (
-        <Select
-          mb="4"
-          placeholder="Select Project"
-          value={project}
-          onChange={(e) => setProject(e.target.value)}
-          bg="gray.700"
-          color="white"
-        >
-          {projects.map(proj => (
-            <option key={proj._id} value={proj._id}>
-              {proj.name}
-            </option>
-          ))}
-        </Select>
-      )}
+      <Input
+        mb="4"
+        placeholder="Project Name"
+        value={projectName}
+        isDisabled
+        bg="gray.700"
+        color="white"
+        _placeholder={{ color: 'gray.400' }}
+      />
       <Select
         mb="4"
         placeholder="Select Priority"

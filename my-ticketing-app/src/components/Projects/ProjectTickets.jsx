@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Box, Table, Tbody, Tr, Td, Button, Heading, Avatar, VStack, Tag, Badge } from '@chakra-ui/react';
+import { Box, Button, Heading, SimpleGrid } from '@chakra-ui/react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import TicketCard from '../Tickets/TicketCard';
 
 const ProjectTickets = () => {
   const { id } = useParams();
@@ -56,68 +57,34 @@ const ProjectTickets = () => {
     }
   };
 
-  const getUsername = (userId) => {
-    const user = users.find(user => user._id === userId);
-    return user ? user.username : 'Unassigned';
-  };
-
-  const getBadgeColor = (priority) => {
-    switch (priority) {
-      case 'High':
-        return 'red';
-      case 'Mid':
-        return 'orange';
-      case 'Low':
-        return 'green';
-      default:
-        return 'gray';
-    }
-  };
-
-  const getTagColor = (status) => {
-    switch (status) {
-      case 'Open':
-        return 'blue';
-      case 'In Progress':
-        return 'yellow';
-      case 'Closed':
-        return 'red';
-      default:
-        return 'gray';
-    }
-  };
-
   return (
-    <Box p="8">
+    <Box p="8" w={'100%'}>
       <Heading as="h2" size="xl" mb="4">Tickets for Project</Heading>
       <Button colorScheme="green" mb="4" onClick={() => navigate(`/tickets/new?project=${id}`)}>Create New Ticket</Button>
       <Button colorScheme="red" mb="4" onClick={() => navigate(`/projects`)}>Back</Button>
-      <Table variant="simple">
-        <Tbody>
+      <Box
+        maxH="70vh" // Hauteur maximale pour le conteneur de la liste des tickets
+        overflowY="auto" // Activer le défilement vertical
+        p="2"
+        borderWidth="1px"
+        borderRadius="lg"
+      >
+        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing="4">
           {tickets.map(ticket => (
-            <Tr key={ticket._id}>
-              <Td>{ticket.title}</Td>
-              <Td>{ticket.description}</Td>
-              <Td><Badge colorScheme={getBadgeColor(ticket.priority)}>{ticket.priority}</Badge></Td>
-              <Td><Tag colorScheme={getTagColor(ticket.status)}>{ticket.status}</Tag></Td>
-              <Td>
-                {ticket.assignedTo ? (
-                  <VStack>
-                    <Avatar size="sm" />
-                    <Box>{getUsername(ticket.assignedTo)}</Box>
-                  </VStack>
-                ) : (
-                  'Unassigned'
-                )}
-              </Td>
-              <Td>
-                <Button colorScheme="blue" mr="4" onClick={() => navigate(`/tickets/${ticket._id}`, { state: { projectId: id } })}>View</Button>
-                <Button colorScheme="red" onClick={() => handleDelete(ticket._id)}>Delete</Button>
-              </Td>
-            </Tr>
+            <TicketCard
+              key={ticket._id}
+              id={ticket._id}
+              title={ticket.title}
+              description={ticket.description}
+              date={ticket.createAt}
+              status={ticket.status}
+              priority={ticket.priority}
+              assignedTo={ticket.assignedTo}
+              onDelete={handleDelete}
+            />
           ))}
-        </Tbody>
-      </Table>
+        </SimpleGrid>
+      </Box>
     </Box>
   );
 };
