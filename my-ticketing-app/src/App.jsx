@@ -12,6 +12,7 @@ import GestionClients from './components/Clients/ClientList';
 import TicketForm from './components/Tickets/TicketForm';
 import TicketDetail from './components/Tickets/TicketDetail';
 import ProjectTickets from './components/Projects/ProjectTickets';
+import Statistics from './components/Statistics/Statistics';
 
 function App() {
 
@@ -79,6 +80,10 @@ function App() {
         {
           path: 'tickets/:id/edit',
           element: <TicketForm />
+        },
+        {
+          path: 'statistics',
+          element: <Statistics />
         }
       ]
     }

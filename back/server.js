@@ -131,9 +131,9 @@ app.get('/tickets/:id', verifyToken, async (req, res) => {
 
 // Create a new ticket
 app.post('/tickets', verifyToken, async (req, res) => {
-  const { title, description, priority, project } = req.body;
+  const { title, description, priority, status, project, assignedTo } = req.body;
   try {
-    const newTicket = new Ticket({ title, description, priority, project });
+    const newTicket = new Ticket({ title, description, priority, status, project, assignedTo });
     await newTicket.save();
     await Project.findByIdAndUpdate(project, { $push: { tickets: newTicket._id } });
     res.status(201).json(newTicket);
@@ -145,28 +145,20 @@ app.post('/tickets', verifyToken, async (req, res) => {
 // Update a ticket by ID
 app.put('/tickets/:id', verifyToken, async (req, res) => {
   const { id } = req.params;
-  const { title, description, priority, status, project } = req.body;
+  const { title, description, priority, status, assignedTo } = req.body; // Include assignedTo
   try {
     const ticket = await Ticket.findById(id);
     if (!ticket) {
       return res.status(404).json({ message: 'Ticket not found' });
     }
 
-    const oldProjectId = ticket.project;
     ticket.title = title;
     ticket.description = description;
     ticket.priority = priority;
     ticket.status = status;
-    ticket.project = project;
+    ticket.assignedTo = assignedTo;
 
     await ticket.save();
-
-    // If the project has changed, update the project references
-    if (oldProjectId.toString() !== project) {
-      await Project.findByIdAndUpdate(oldProjectId, { $pull: { tickets: id } });
-      await Project.findByIdAndUpdate(project, { $push: { tickets: id } });
-    }
-
     res.status(200).json(ticket);
   } catch (error) {
     res.status(500).json({ message: 'Error updating ticket', error: error.message });
@@ -320,6 +312,101 @@ app.delete('/clients/:id', verifyToken, async (req, res) => {
     res.status(500).json({ message: 'Error deleting client', error: error.message });
   }
 });
+
+// Get all users (add this route if not already present)
+app.get('/users', verifyToken, async (req, res) => {
+  try {
+    const users = await User.find();
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching users', error: error.message });
+  }
+});
+
+// Get statistics
+app.get('/statistics', verifyToken, async (req, res) => {
+  try {
+    const ticketsPerMonth = await Ticket.aggregate([
+      {
+        $group: {
+          _id: { $month: "$createdAt" },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    const ticketsPerUser = await Ticket.aggregate([
+      {
+        $group: {
+          _id: "$assignedTo",
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "user"
+        }
+      },
+      { $sort: { count: -1 } }
+    ]);
+
+    const ticketsPerProject = await Ticket.aggregate([
+      {
+        $group: {
+          _id: "$project",
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $lookup: {
+          from: "projects",
+          localField: "_id",
+          foreignField: "_id",
+          as: "project"
+        }
+      },
+      { $sort: { count: -1 } }
+    ]);
+
+    const ticketsPerStatus = await Ticket.aggregate([
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { count: -1 } }
+    ]);
+
+    const avgResolutionTime = await Ticket.aggregate([
+      {
+        $match: { status: "Closed" }
+      },
+      {
+        $group: {
+          _id: null,
+          avgTime: { $avg: { $subtract: ["$updatedAt", "$createdAt"] } }
+        }
+      }
+    ]);
+
+    res.status(200).json({
+      ticketsPerMonth,
+      ticketsPerUser,
+      ticketsPerProject,
+      ticketsPerStatus,
+      avgResolutionTime: avgResolutionTime.length > 0 ? avgResolutionTime[0].avgTime : 0
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching statistics', error: error.message });
+  }
+});
+
+
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

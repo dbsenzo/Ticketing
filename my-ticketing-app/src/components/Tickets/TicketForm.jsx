@@ -8,6 +8,8 @@ const TicketForm = () => {
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState('Low');
   const [status, setStatus] = useState('Open');
+  const [users, setUsers] = useState([]);
+  const [assignedTo, setAssignedTo] = useState('');
   const [projects, setProjects] = useState([]);
   const [project, setProject] = useState('');
   const navigate = useNavigate();
@@ -15,21 +17,28 @@ const TicketForm = () => {
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    const fetchProjects = async () => {
+    const fetchProjectsAndUsers = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:5000/projects', {
+        const projectResponse = await axios.get('http://localhost:5000/projects', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        setProjects(response.data);
+        setProjects(projectResponse.data);
+
+        const userResponse = await axios.get('http://localhost:5000/users', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setUsers(userResponse.data);
       } catch (error) {
-        console.error('Error fetching projects', error);
+        console.error('Error fetching data', error);
       }
     };
 
-    fetchProjects();
+    fetchProjectsAndUsers();
 
     if (id) {
       const fetchTicket = async () => {
@@ -45,6 +54,7 @@ const TicketForm = () => {
           setPriority(response.data.priority);
           setStatus(response.data.status);
           setProject(response.data.project._id);  // Note that the project is not changeable
+          setAssignedTo(response.data.assignedTo || '');
         } catch (error) {
           console.error('Error fetching ticket', error);
         }
@@ -66,7 +76,7 @@ const TicketForm = () => {
           Authorization: `Bearer ${token}`,
         },
       };
-      const payload = { title, description, priority, status, project };
+      const payload = { title, description, priority, status, project, assignedTo };
       if (id) {
         await axios.put(`http://localhost:5000/tickets/${id}`, payload, config);
       } else {
@@ -100,21 +110,20 @@ const TicketForm = () => {
         _placeholder={{ color: 'gray.400' }}
       />
       {!id && (
-        <>
+        <Select
+          mb="4"
+          placeholder="Select Project"
+          value={project}
+          onChange={(e) => setProject(e.target.value)}
+          bg="gray.700"
+          color="white"
+        >
           {projects.map(proj => (
-            <Input
-              key={proj._id}
-              mb="4"
-              placeholder="Ticket Title"
-              value={proj.name}
-              onChange={(e) => setTitle(e.target.value)}
-              bg="gray.700"
-              color="white"
-              _placeholder={{ color: 'gray.400' }}
-              disabled
-            />
+            <option key={proj._id} value={proj._id}>
+              {proj.name}
+            </option>
           ))}
-        </>
+        </Select>
       )}
       <Select
         mb="4"
@@ -139,6 +148,20 @@ const TicketForm = () => {
         <option value="Open">Open</option>
         <option value="In Progress">In Progress</option>
         <option value="Closed">Closed</option>
+      </Select>
+      <Select
+        mb="4"
+        placeholder="Assign to"
+        value={assignedTo}
+        onChange={(e) => setAssignedTo(e.target.value)}
+        bg="gray.700"
+        color="white"
+      >
+        {users.map(user => (
+          <option key={user._id} value={user._id}>
+            {user.username}
+          </option>
+        ))}
       </Select>
       <Button width="100%" colorScheme="blue" onClick={handleSubmit}>
         {id ? 'Update Ticket' : 'Save Ticket'}
