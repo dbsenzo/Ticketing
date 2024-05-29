@@ -1,28 +1,140 @@
-// src/components/Users/UserList.jsx
 import { useState, useEffect } from 'react';
-import { Box, Table, Tbody, Tr, Th, Td, Button, Heading } from '@chakra-ui/react';
+import { Box, Table, Tbody, Tr, Th, Td, Button, Heading, Tag, Input, Select, useToast } from '@chakra-ui/react';
 import axios from 'axios';
+import UserForm from './UserForm';
 
 const UserList = () => {
   const [users, setUsers] = useState([]);
+  const [editingUser, setEditingUser] = useState(null);
+  const [editUsername, setEditUsername] = useState('');
+  const [editRole, setEditRole] = useState('');
+  const toast = useToast();
+
+  const fetchUsers = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:5000/users', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setUsers(response.data);
+    } catch (error) {
+      console.error('Error fetching users', error);
+    }
+  };
 
   useEffect(() => {
-    axios.get('http://localhost:5000/users')
-      .then(response => setUsers(response.data))
-      .catch(error => console.error('Error fetching users', error));
+    fetchUsers();
   }, []);
+
+  const handleEdit = (user) => {
+    setEditingUser(user);
+    setEditUsername(user.username);
+    setEditRole(user.role);
+  };
+
+  const handleUpdate = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`http://localhost:5000/users/${editingUser._id}`, {
+        username: editUsername,
+        password: editingUser.password,
+        role: editRole,
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setEditingUser(null);
+      fetchUsers();
+      toast({
+        title: 'User updated successfully.',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error('Error updating user', error);
+      toast({
+        title: 'Error updating user.',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const handleDelete = async (userId) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`http://localhost:5000/users/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      fetchUsers();
+      toast({
+        title: 'User deleted successfully.',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error('Error deleting user', error);
+      toast({
+        title: 'Error deleting user.',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
 
   return (
     <Box p="8">
       <Heading as="h2" size="xl" mb="4">Users</Heading>
+      <UserForm onSave={fetchUsers} />
       <Table variant="simple">
         <Tbody>
           {users.map(user => (
             <Tr key={user._id}>
               <Td>{user.username}</Td>
               <Td>
-                <Button colorScheme="blue" mr="4">Edit</Button>
-                <Button colorScheme="red">Delete</Button>
+                <Tag colorScheme={user.role === 'Développeur' ? 'green' : 'blue'}>
+                  {user.role}
+                </Tag>
+              </Td>
+              <Td>
+                {editingUser && editingUser._id === user._id ? (
+                  <>
+                    <Input
+                      value={editUsername}
+                      onChange={(e) => setEditUsername(e.target.value)}
+                      mb="4"
+                    />
+                    <Select
+                      value={editRole}
+                      onChange={(e) => setEditRole(e.target.value)}
+                      mb="4"
+                    >
+                      <option value="Développeur">Développeur</option>
+                      <option value="Rapporteur">Rapporteur</option>
+                    </Select>
+                    <Button colorScheme="green" mr="4" onClick={handleUpdate}>
+                      Save
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button colorScheme="blue" mr="4" onClick={() => handleEdit(user)}>
+                      Edit
+                    </Button>
+                    <Button colorScheme="red" onClick={() => handleDelete(user._id)}>
+                      Delete
+                    </Button>
+                  </>
+                )}
               </Td>
             </Tr>
           ))}
