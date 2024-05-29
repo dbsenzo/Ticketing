@@ -1,4 +1,3 @@
-// src/contexts/AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
@@ -10,11 +9,14 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      setIsLoggedIn(true);
+      checkAuth(token);
+    } else {
+      setLoading(false);
     }
   }, []);
 
@@ -34,8 +36,24 @@ export const AuthProvider = ({ children }) => {
     setIsLoggedIn(false);
   };
 
+  const checkAuth = async (token) => {
+    try {
+      await axios.get('http://localhost:5000/auth/check', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setIsLoggedIn(true);
+    } catch (error) {
+      console.error('Error checking token', error);
+      logout();
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ isLoggedIn, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, login, logout, checkAuth, loading }}>
       {children}
     </AuthContext.Provider>
   );

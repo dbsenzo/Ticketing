@@ -3,14 +3,20 @@ import { useState } from 'react';
 import { Box, Input, Button, Heading } from '@chakra-ui/react';
 import axios from 'axios';
 
-const ClientForm = ({ client, onSave }) => {
-  const [name, setName] = useState(client ? client.name : '');
+const ClientForm = ({ onSave }) => {
+  const [name, setName] = useState('');
 
   const handleSubmit = async () => {
     try {
-      const response = await axios.post('http://localhost:5000/clients', { name });
+      const token = localStorage.getItem('token');
+      const response = await axios.post('http://localhost:5000/clients', { name }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       console.log('Client saved successfully', response.data);
       onSave();
+      setName('');  // Clear the input field after saving
     } catch (error) {
       console.error('Error saving client', error);
     }
