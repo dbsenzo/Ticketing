@@ -2,19 +2,33 @@
 import { useState, useEffect } from 'react';
 import { Box, Table, Tbody, Tr, Th, Td, Button, Heading } from '@chakra-ui/react';
 import axios from 'axios';
+import ClientForm from './ClientForm';
 
 const ClientList = () => {
   const [clients, setClients] = useState([]);
 
+  const fetchClients = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:5000/clients', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setClients(response.data);
+    } catch (error) {
+      console.error('Error fetching clients', error);
+    }
+  };
+
   useEffect(() => {
-    axios.get('http://localhost:5000/clients')
-      .then(response => setClients(response.data))
-      .catch(error => console.error('Error fetching clients', error));
+    fetchClients();
   }, []);
 
   return (
     <Box p="8">
       <Heading as="h2" size="xl" mb="4">Clients</Heading>
+      <ClientForm onSave={fetchClients} />
       <Table variant="simple">
         <Tbody>
           {clients.map(client => (

@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const User = require('./models/User');
+const Client = require('./models/Client');
 const app = express();
 const jwtSecret = 'your_jwt_secret';
 const PORT = 5000;
@@ -90,6 +91,59 @@ const verifyToken = (req, res, next) => {
 // Token Check Endpoint
 app.get("/auth/check", verifyToken, (req, res) => {
   res.status(200).json({ message: "Token is valid" });
+});
+
+// Client Endpoints
+
+// Get all clients
+app.get('/clients', verifyToken, async (req, res) => {
+  try {
+    const clients = await Client.find();
+    res.status(200).json(clients);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching clients', error: error.message });
+  }
+});
+
+// Create a new client
+app.post('/clients', verifyToken, async (req, res) => {
+  const { name } = req.body;
+  try {
+    const newClient = new Client({ name });
+    await newClient.save();
+    res.status(201).json(newClient);
+  } catch (error) {
+    res.status(500).json({ message: 'Error creating client', error: error.message });
+  }
+});
+
+// Update a client
+app.put('/clients/:id', verifyToken, async (req, res) => {
+  const { id } = req.params;
+  const { name } = req.body;
+  try {
+    const updatedClient = await Client.findByIdAndUpdate(id, { name }, { new: true });
+    if (!updatedClient) {
+      return res.status(404).json({ message: 'Client not found' });
+    }
+    res.status(200).json(updatedClient);
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating client', error: error.message });
+  }
+});
+
+// Delete a client
+app.delete('/clients/:id', verifyToken, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const deletedClient = await Client.findByIdAndDelete(id);
+    if (!deletedClient) {
+      return res.status(404).json({ message: 'Client not found' });
+    }
+    res.status(200).json({ message: 'Client deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting client', error: error.message });
+  }
 });
 
 app.listen(5000, () => {

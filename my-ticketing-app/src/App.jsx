@@ -13,6 +13,7 @@ import GestionClients from './components/Clients/ClientList';
 import GestionTickets from './components/Tickets/TicketList';
 import TicketForm from './components/Tickets/TicketForm';
 import TicketDetail from './components/Tickets/TicketDetail';
+import ClientForm from './components/Clients/ClientForm';
 
 function App() {
 
@@ -76,7 +77,7 @@ function App() {
         {
           path: 'tickets/:id',
           element: <TicketDetail />
-        }
+        },
       ]
     }
   ];
