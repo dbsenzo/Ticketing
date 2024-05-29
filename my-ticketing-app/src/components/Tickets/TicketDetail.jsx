@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Box, Heading, Text, Button, Badge, Tag } from '@chakra-ui/react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 
 const TicketDetail = () => {
   const { id } = useParams();
   const [ticket, setTicket] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const fetchTicket = async () => {
@@ -65,7 +66,14 @@ const TicketDetail = () => {
         <Tag colorScheme={getTagColor(ticket.status)}>{ticket.status}</Tag>
       </Box>
       <Button colorScheme="blue" mr="4" onClick={() => navigate(`/tickets/${ticket._id}/edit`)}>Edit</Button>
-      <Button colorScheme="red" onClick={() => navigate('/tickets')}>Back</Button>
+      <Button colorScheme="red" onClick={() => {
+        const projectId = location.state?.projectId;
+        if (projectId) {
+          navigate(`/projects/${projectId}/tickets`);
+        } else {
+          navigate('/projects');
+        }
+      }}>Back</Button>
     </Box>
   );
 };

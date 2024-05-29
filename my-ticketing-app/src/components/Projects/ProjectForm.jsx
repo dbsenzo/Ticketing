@@ -1,4 +1,3 @@
-// src/components/Projects/ProjectForm.jsx
 import { useState } from 'react';
 import { Box, Input, Button, Heading } from '@chakra-ui/react';
 import axios from 'axios';
@@ -8,9 +7,15 @@ const ProjectForm = ({ project, onSave }) => {
 
   const handleSubmit = async () => {
     try {
-      const response = await axios.post('http://localhost:5000/projects', { name });
+      const token = localStorage.getItem('token');
+      const response = await axios.post('http://localhost:5000/projects', { name }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       console.log('Project saved successfully', response.data);
-      onSave();
+      setName(''); // Clear the input field
+      onSave(); // Call the onSave callback to update the project list
     } catch (error) {
       console.error('Error saving project', error);
     }

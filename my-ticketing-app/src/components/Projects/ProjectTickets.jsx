@@ -1,25 +1,22 @@
 import { useState, useEffect } from 'react';
-import { Box, Table, Tbody, Tr, Th, Td, Button, Heading, Tag, Badge } from '@chakra-ui/react';
+import { Box, Table, Tbody, Tr, Td, Button, Heading, Tag, Badge } from '@chakra-ui/react';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 
-const TicketList = () => {
+const ProjectTickets = () => {
+  const { id } = useParams();
   const [tickets, setTickets] = useState([]);
   const navigate = useNavigate();
 
   const fetchTickets = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/tickets', {
+      const response = await axios.get(`http://localhost:5000/projects/${id}/tickets`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      const sortedTickets = response.data.sort((a, b) => {
-        const priorityOrder = { 'High': 3, 'Mid': 2, 'Low': 1 };
-        return priorityOrder[b.priority] - priorityOrder[a.priority];
-      });
-      setTickets(sortedTickets);
+      setTickets(response.data);
     } catch (error) {
       console.error('Error fetching tickets', error);
     }
@@ -27,12 +24,12 @@ const TicketList = () => {
 
   useEffect(() => {
     fetchTickets();
-  }, []);
+  }, [id]);
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (ticketId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/tickets/${id}`, {
+      await axios.delete(`http://localhost:5000/tickets/${ticketId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -63,7 +60,7 @@ const TicketList = () => {
       case 'In Progress':
         return 'yellow';
       case 'Closed':
-        return 'green';
+        return 'red';
       default:
         return 'gray';
     }
@@ -71,8 +68,9 @@ const TicketList = () => {
 
   return (
     <Box p="8">
-      <Heading as="h2" size="xl" mb="4">Tickets</Heading>
-      <Button colorScheme="green" mb="4" onClick={() => navigate('/tickets/new')}>Create New Ticket</Button>
+      <Heading as="h2" size="xl" mb="4">Tickets for Project</Heading>
+      <Button colorScheme="green" mb="4" onClick={() => navigate(`/tickets/new?project=${id}`)}>Create New Ticket</Button>
+      <Button colorScheme="red" mb="4" onClick={() => navigate(`/projects`)}>Back</Button>
       <Table variant="simple">
         <Tbody>
           {tickets.map(ticket => (
@@ -82,7 +80,7 @@ const TicketList = () => {
               <Td><Badge colorScheme={getBadgeColor(ticket.priority)}>{ticket.priority}</Badge></Td>
               <Td><Tag colorScheme={getTagColor(ticket.status)}>{ticket.status}</Tag></Td>
               <Td>
-                <Button colorScheme="blue" mr="4" onClick={() => navigate(`/tickets/${ticket._id}`)}>View</Button>
+                <Button colorScheme="blue" mr="4" onClick={() => navigate(`/tickets/${ticket._id}`, { state: { projectId: id } })}>View</Button>
                 <Button colorScheme="red" onClick={() => handleDelete(ticket._id)}>Delete</Button>
               </Td>
             </Tr>
@@ -93,4 +91,4 @@ const TicketList = () => {
   );
 };
 
-export default TicketList;
+export default ProjectTickets;
