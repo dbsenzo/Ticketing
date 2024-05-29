@@ -25,8 +25,7 @@ mongoose.connect(uri, {
 });
 
 app.post("/auth/register", async (req, res) => {
-  const { username, password } = req.body;
-  console.log(username, password);
+  const { username, password, role } = req.body;
   try {
     // Check if the user already exists
     const existingUser = await User.findOne({ username });
@@ -39,7 +38,7 @@ app.post("/auth/register", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create a new user
-    const newUser = new User({ username, password: hashedPassword });
+    const newUser = new User({ username, password: hashedPassword, role });
     await newUser.save();
 
     res.status(201).json({ message: "User registered successfully" });
@@ -91,6 +90,68 @@ const verifyToken = (req, res, next) => {
 // Token Check Endpoint
 app.get("/auth/check", verifyToken, (req, res) => {
   res.status(200).json({ message: "Token is valid" });
+});
+
+
+// User Endpoints
+
+// Get all users
+app.get('/users', verifyToken, async (req, res) => {
+  try {
+    const users = await User.find();
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching users', error: error.message });
+  }
+});
+
+// Create a new user
+app.post('/users', verifyToken, async (req, res) => {
+  const { username, password, role } = req.body;
+  try {
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({ username, password: hashedPassword, role });
+    await newUser.save();
+
+    res.status(201).json(newUser);
+  } catch (error) {
+    res.status(500).json({ message: 'Error creating user', error: error.message });
+  }
+});
+
+// Update a user
+app.put('/users/:id', verifyToken, async (req, res) => {
+  const { id } = req.params;
+  const { username, password, role } = req.body;
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const updatedUser = await User.findByIdAndUpdate(id, { username, password: hashedPassword, role }, { new: true });
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating user', error: error.message });
+  }
+});
+
+// Delete a user
+app.delete('/users/:id', verifyToken, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const deletedUser = await User.findByIdAndDelete(id);
+    if (!deletedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.status(200).json({ message: 'User deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting user', error: error.message });
+  }
 });
 
 // Client Endpoints
