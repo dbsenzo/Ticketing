@@ -167,7 +167,7 @@ const TicketForm = () => {
           </option>
         ))}
       </Select>
-      <Button width="100%" colorScheme="blue" onClick={handleSubmit}>
+      <Button width="100%" colorScheme="purple" borderRadius={0} onClick={handleSubmit}>
         {id ? 'Update Ticket' : 'Save Ticket'}
       </Button>
     </Box>
